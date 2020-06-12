@@ -10,9 +10,9 @@ world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-# map_file = "maps/test_cross.txt"
+map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-map_file = "maps/test_loop_fork.txt"
+# map_file = "maps/test_loop_fork.txt"
 # map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
@@ -35,6 +35,7 @@ visited = {}
 curr_room = player.current_room.id
 visited_key = curr_room
 visited_value = player.current_room.get_exits()
+reverse_dir = { 'n': 's', 's': 'n', 'e': 'w', 'w': 'e',}
 
 move_stack = []
 
@@ -43,29 +44,40 @@ move_stack = []
 #   visited_key 0: visited_value{'n': '?', 's': '?', 'w': '?', 'e': '?'}
 # }
 visited[visited_key] = visited_value
-print(visited)
+
+print("Full Visited List:", visited)
+print("Visited Index[curr_room]:", visited[curr_room])
+print("Visited Index[curr_room][0]:", visited[curr_room][0])
+print("Visited Index[curr_room].pop():", visited[curr_room].pop(0))
+print("Visited Index[curr_room] Length:", len(visited[curr_room]))
+
 
 # ? range to traverse = len(room_graph) -1, exit when visited = # of rooms - full scope while loop
 while len(visited) < len(room_graph) -1:
+
     # ? if current room is not previously visited, add to visited, document room
     if curr_room not in visited:
         # add current room to visited, add exits as value?
         visited[curr_room] = curr_room.get_exits()
+        # define direction that player entered current room from
+        prev_dir = move_stack[-1]
+        # remove direction that player came from
+        visited[curr_room].remove(prev_dir)
             
-    # ? if dead end
-    while len(visited[curr_room]) == 0:
-        # pop previous direction from move stack
-        prev_dir = ?
-        # add backtrack directions to traversal
-        traversal_path.append(prev_dir)
-        # move player in backtracked direction
-        player.travel(prev_dir)
+        # ? if dead end, backtrack
+        while len(visited[curr_room]) == 0:
+            # pop previous direction from move stack
+            prev_dir = move_stack.pop()
+            # add backtrack directions to traversal
+            traversal_path.append(prev_dir)
+            # move player in backtracked direction
+            player.travel(prev_dir)
 
     # ? move player to next room
-    # add neighbors to move_stack
-    move_stack.append()
-    # determine next direction to move
-    next_move = ?
+    # determine next direction to move - pop exit of current room exits list
+    next_move = visited[curr_room].pop(0)
+    # add direction to move_stack
+    move_stack.append(reverse_dir[next_move])
     # append direction of next travel to traversal path
     traversal_path.append(next_move)
     # move player to next room
