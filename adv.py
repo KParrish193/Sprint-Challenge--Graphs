@@ -12,8 +12,8 @@ world = World()
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+# map_file = "maps/test_loop_fork.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -35,6 +35,7 @@ visited = {}
 reverse_dir = { 'n': 's', 's': 'n', 'e': 'w', 'w': 'e',}
 
 move_stack = []
+move_count = 0
 
 # visited
 # {
@@ -44,49 +45,51 @@ visited[player.current_room.id] = player.current_room.get_exits()
 
 # ? range to traverse = len(room_graph) -1, exit when visited = # of rooms - full scope while loop
 while len(visited) < len(room_graph) -1:
-    curr_room = player.current_room
 
     # ? if current room is not previously visited, add to visited, document room
-    if curr_room.id not in visited:
+    if player.current_room.id not in visited:
         # add current room to visited, add exits as value
-        visited[curr_room.id] = curr_room.get_exits()
+        visited[player.current_room.id] = player.current_room.get_exits()
         # define direction that player entered current room from
         if move_stack == []:
             prev_dir = None
         else:
             prev_dir = move_stack[-1]
-        # print("Previous Direction:", prev_dir)
-        # remove direction that player came from
-        visited[curr_room.id].remove(prev_dir)
+        # remove direction that player came from to continue depth first search
+        visited[player.current_room.id].remove(prev_dir)
             
     # ? if dead end, backtrack to next room with directions to go
-    if len(visited[curr_room.id]) == 0:
-        print("Dead End, Current Room:", curr_room.id)
-        # pop off previous direction to set next movement to backtrack
-        visited[curr_room.id].append(prev_dir)
-        prev_dir = move_stack.pop()
-        
-    while len(visited[curr_room.id]) == 0:
+    if len(visited[player.current_room.id]) == 0:
+        print("Dead End, Current Room:", player.current_room.id)
+                
+    while len(visited[player.current_room.id]) == 0:
         print("Backtrack")
+        prev_dir = move_stack.pop()
         # add backtrack directions to traversal
         traversal_path.append(prev_dir)
         # move player in backtracked direction
+        move_count += 1
         player.travel(prev_dir)
-        print(curr_room.id)
+        print(player.current_room.id)
+        print("move_count", move_count)
 
     # ? move player to next room
-    print("Current Room:", curr_room.id)
-    print("In function Exits:", visited[curr_room.id])
+    print("Current Room:", player.current_room.id)
+    print("In function Exits:", visited[player.current_room.id])
+    print("Actual Room Exits:", player.current_room.get_exits())
     # determine next direction to move - pop exit of current room exits list
-    next_move = visited[curr_room.id].pop(0)
+    next_move = visited[player.current_room.id].pop(0)
     print("Next Move:", next_move, "\n")
     # add direction to move_stack
     move_stack.append(reverse_dir[next_move])
     # append direction of next travel to traversal path
     print("move_stack", move_stack)
     traversal_path.append(next_move)
+    move_count += 1
     # move player to next room
     player.travel(next_move)
+    print("move count:", move_count)
+    print("visited:", visited)
 
 # ! ------------------------------------------------ !
 
